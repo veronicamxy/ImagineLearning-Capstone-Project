@@ -1,0 +1,342 @@
+---
+title: "data_cleaning"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+math_houston <- read.csv("TX_HoustonISD_STAARMath_CLEAN.csv", header = TRUE)
+DF <- select(math_houston,Grade_1718, Student_ID, TestType_1617, MathScaleScore_1617, PercentileRankings_1617, TestType_1718., MathScaleScore_1718, MathPercentileRankings_1718, hours_on_program, lessons_passed, lessons_completed, problems_passed, problems_completed, points_earned, benchmark_1_quantile, benchmark_2_quantile,benchmark_3_quantile, benchmark_1_percentile, benchmark_2_percentile, benchmark_3_percentile)
+
+DF <- filter(DF, TestType_1617!="" & TestType_1718.!="" )
+DF_EOC <- filter(DF, TestType_1617=="EOC Alg I" & TestType_1718.=="EOC Algebra I" )
+DF_MATH <- filter(DF, TestType_1617=="3-8 Math" & TestType_1718.=="Math 3-8" ) #13723 samples
+```
+
+
+##Grade 3 - 140 Samples - Discard
+```{r}
+DF_HoustonMath_G3 <- filter(DF_MATH, Grade_1718 == "3")
+DF_HoustonMath_G3$Improve <- DF_HoustonMath_G3$MathPercentileRankings_1718 - DF_HoustonMath_G3$PercentileRankings_1617
+DF_HoustonMath_G3$level.up <- ifelse(DF_HoustonMath_G3$Improve >0, "Yes","No")
+table(DF_HoustonMath_G3$level.up) #129 Yes, 11 No
+
+hist(DF_HoustonMath_G3$benchmark_1_quantile)
+G3B1mean <- mean(DF_HoustonMath_G3$benchmark_1_quantile) #149.8
+G3B1sd <- sd(DF_HoustonMath_G3$benchmark_1_quantile) #176.8
+
+hist(DF_HoustonMath_G3$benchmark_2_quantile)
+G3B2mean <- mean(DF_HoustonMath_G3$benchmark_2_quantile, na.rm = TRUE) #134.5
+G3B2sd <- sd(DF_HoustonMath_G3$benchmark_2_quantile, na.rm = TRUE) #174.5
+
+hist(DF_HoustonMath_G3$benchmark_3_quantile)
+G3B3mean <- mean(DF_HoustonMath_G3$benchmark_3_quantile, na.rm = TRUE) #242.9 
+G3B3sd <- sd(DF_HoustonMath_G3$benchmark_3_quantile, na.rm = TRUE) #136.83
+
+hist(DF_HoustonMath_G3$Improve)
+G3STAARImproveMean <- mean(DF_HoustonMath_G3$Improve) #22.228
+G3STAARImproveSD <- sd(DF_HoustonMath_G3$Improve) #17.32
+```
+
+
+#Grade 4 - 4802 Samples
+```{r}
+DF_HoustonMath_G4 <- filter(DF_MATH, Grade_1718 == "4")
+DF_HoustonMath_G4$OriginLevel <- ifelse(DF_HoustonMath_G4$MathScaleScore_1617 >= 1670, 3,
+                                        ifelse(DF_HoustonMath_G4$MathScaleScore_1617 <= 1467, 1 ,2))
+table(DF_HoustonMath_G4$OriginLevel)
+
+G4Approaches <- filter(DF_HoustonMath_G4, DF_HoustonMath_G4$OriginLevel == 1)
+G4Approaches$Improve <- G4Approaches$MathScaleScore_1718 - G4Approaches$MathScaleScore_1617
+mean(G4Approaches$Improve)
+
+G4Meets <- filter(DF_HoustonMath_G4, DF_HoustonMath_G4$OriginLevel == 2)
+G4Meets$Improve <- G4Meets$MathScaleScore_1718 - G4Meets$MathScaleScore_1617
+mean(G4Meets$Improve)
+
+G4Master <- filter(DF_HoustonMath_G4, DF_HoustonMath_G4$OriginLevel == 3)
+G4Master$Improve <- G4Master$MathScaleScore_1718 - G4Master$MathScaleScore_1617
+mean(G4Master$Improve)
+
+
+mean(G4Approaches$hours_on_program)
+mean(G4Meets$hours_on_program)
+mean(G4Master$hours_on_program)
+
+
+
+
+DF_HoustonMath_G4$Improve <- DF_HoustonMath_G4$MathPercentileRankings_1718 - DF_HoustonMath_G4$PercentileRankings_1617
+DF_HoustonMath_G4$level.up <- ifelse(DF_HoustonMath_G4$Improve >0, "Yes","No")
+table(DF_HoustonMath_G4$level.up) #2325 "Yes" 2477 "No"
+
+hist(DF_HoustonMath_G4$benchmark_1_quantile)
+G4B1mean <- mean(DF_HoustonMath_G4$benchmark_1_quantile) #307.7
+G4B1sd <- sd(DF_HoustonMath_G4$benchmark_1_quantile) #171.1
+
+hist(DF_HoustonMath_G4$benchmark_2_quantile)
+G4B2mean <- mean(DF_HoustonMath_G4$benchmark_2_quantile, na.rm = TRUE) #371.6
+G4B2sd <- sd(DF_HoustonMath_G4$benchmark_2_quantile, na.rm = TRUE) #195.6
+
+hist(DF_HoustonMath_G4$benchmark_3_quantile)
+G4B3mean <- mean(DF_HoustonMath_G4$benchmark_3_quantile, na.rm = TRUE) #478.7
+G4B3sd <- sd(DF_HoustonMath_G4$benchmark_3_quantile, na.rm = TRUE) #209.7
+
+hist(DF_HoustonMath_G4$Improve)
+G4STAARImproveMean <- mean(DF_HoustonMath_G4$Improve) #-1
+G4STAARImproveSD <- sd(DF_HoustonMath_G4$Improve) #20.8
+```
+
+
+
+#Grade 5 - 4782 Samples
+```{r}
+DF_HoustonMath_G5 <- filter(DF_MATH, Grade_1718 == "5")
+
+DF_HoustonMath_G5$OriginLevel <- ifelse(DF_HoustonMath_G5$MathScaleScore_1617 >= 1724, 3,
+                                        ifelse(DF_HoustonMath_G5$MathScaleScore_1617 <= 1500, 1 ,2))
+table(DF_HoustonMath_G5$OriginLevel)
+
+G5Approaches <- filter(DF_HoustonMath_G5, DF_HoustonMath_G5$OriginLevel == 1)
+G5Approaches$Improve <- G5Approaches$MathScaleScore_1718 - G5Approaches$MathScaleScore_1617
+mean(G5Approaches$Improve)
+
+G5Meets <- filter(DF_HoustonMath_G5, DF_HoustonMath_G5$OriginLevel == 2)
+G5Meets$Improve <- G5Meets$MathScaleScore_1718 - G5Meets$MathScaleScore_1617
+mean(G5Meets$Improve)
+
+G5Master <- filter(DF_HoustonMath_G5, DF_HoustonMath_G5$OriginLevel == 3)
+G5Master$Improve <- G5Master$MathScaleScore_1718 - G5Master$MathScaleScore_1617
+mean(G5Master$Improve)
+
+mean(G5Approaches$hours_on_program)
+mean(G5Meets$hours_on_program)
+mean(G5Master$hours_on_program)
+
+
+
+
+
+DF_HoustonMath_G5$Improve <- DF_HoustonMath_G5$MathPercentileRankings_1718 - DF_HoustonMath_G5$PercentileRankings_1617
+DF_HoustonMath_G5$level.up <- ifelse(DF_HoustonMath_G5$Improve >0, "Yes","No")
+table(DF_HoustonMath_G5$level.up) #2285 Yes, 2497 No
+
+hist(DF_HoustonMath_G5$benchmark_1_quantile)
+G5B1mean <- mean(DF_HoustonMath_G5$benchmark_1_quantile) #424.7
+G5B1sd <- sd(DF_HoustonMath_G5$benchmark_1_quantile) #215
+
+hist(DF_HoustonMath_G5$benchmark_2_quantile)
+G5B2mean <- mean(DF_HoustonMath_G5$benchmark_2_quantile, na.rm = TRUE) #470.7
+G5B2sd <- sd(DF_HoustonMath_G5$benchmark_2_quantile, na.rm = TRUE) #223.8
+
+hist(DF_HoustonMath_G5$benchmark_3_quantile)
+G5B3mean <- mean(DF_HoustonMath_G5$benchmark_3_quantile, na.rm = TRUE) #586.1
+G5B3sd <- sd(DF_HoustonMath_G5$benchmark_3_quantile, na.rm = TRUE) #222.1
+
+hist(DF_HoustonMath_G5$Improve)
+G5STAARImproveMean <- mean(DF_HoustonMath_G5$Improve) #negative value, almost 0
+G5STAARImproveSD <- sd(DF_HoustonMath_G5$Improve) #20.2
+
+```
+
+
+#Grade 6 - 1562 Samples
+```{r}
+DF_HoustonMath_G6 <- filter(DF_MATH, Grade_1718 == "6")
+
+DF_HoustonMath_G6$OriginLevel <- ifelse(DF_HoustonMath_G6$MathScaleScore_1617 >= 1772, 3,
+                                        ifelse(DF_HoustonMath_G6$MathScaleScore_1617 <= 1536, 1 ,2))
+table(DF_HoustonMath_G6$OriginLevel)
+
+G6Approaches <- filter(DF_HoustonMath_G6, DF_HoustonMath_G6$OriginLevel == 1)
+G6Approaches$Improve <- G6Approaches$MathScaleScore_1718 - G6Approaches$MathScaleScore_1617
+mean(G6Approaches$Improve)
+
+G6Meets <- filter(DF_HoustonMath_G6, DF_HoustonMath_G6$OriginLevel == 2)
+G6Meets$Improve <- G6Meets$MathScaleScore_1718 - G6Meets$MathScaleScore_1617
+mean(G6Meets$Improve)
+
+G6Master <- filter(DF_HoustonMath_G6, DF_HoustonMath_G6$OriginLevel == 3)
+G6Master$Improve <- G6Master$MathScaleScore_1718 - G6Master$MathScaleScore_1617
+mean(G6Master$Improve)
+
+mean(G6Approaches$hours_on_program)
+mean(G6Meets$hours_on_program)
+mean(G6Master$hours_on_program)
+
+
+
+
+DF_HoustonMath_G6$Improve <- DF_HoustonMath_G6$MathPercentileRankings_1718 - DF_HoustonMath_G6$PercentileRankings_1617
+DF_HoustonMath_G6$level.up <- ifelse(DF_HoustonMath_G6$Improve >0, "Yes","No")
+table(DF_HoustonMath_G6$level.up) #713 "Yes" 849 "No"
+
+hist(DF_HoustonMath_G6$benchmark_1_quantile)
+G6B1mean <- mean(DF_HoustonMath_G6$benchmark_1_quantile) #390.7
+G6B1sd <- sd(DF_HoustonMath_G6$benchmark_1_quantile) #238
+
+hist(DF_HoustonMath_G6$benchmark_2_quantile)
+G6B2mean <- mean(DF_HoustonMath_G6$benchmark_2_quantile, na.rm = TRUE) #320.1
+G6B2sd <- sd(DF_HoustonMath_G6$benchmark_2_quantile, na.rm = TRUE) #245.1
+
+hist(DF_HoustonMath_G6$benchmark_3_quantile) #Nobody did, not available?
+G6B3mean <- mean(DF_HoustonMath_G6$benchmark_3_quantile, na.rm = TRUE) #N/A 
+G6B3sd <- sd(DF_HoustonMath_G6$benchmark_3_quantile, na.rm = TRUE) #N/A
+
+hist(DF_HoustonMath_G6$Improve)
+G6STAARImproveMean <- mean(DF_HoustonMath_G6$Improve) #0.9
+G6STAARImproveSD <- sd(DF_HoustonMath_G6$Improve) #20.4
+
+
+```
+
+
+#Grade 7 - 1368 Samples
+```{r}
+DF_HoustonMath_G7 <- filter(DF_MATH, Grade_1718 == "7")
+
+DF_HoustonMath_G7$OriginLevel <- ifelse(DF_HoustonMath_G7$MathScaleScore_1617 >= 1798, 3,
+                                        ifelse(DF_HoustonMath_G7$MathScaleScore_1617 <= 1575, 1 ,2))
+table(DF_HoustonMath_G7$OriginLevel)
+
+G7Approaches <- filter(DF_HoustonMath_G7, DF_HoustonMath_G7$OriginLevel == 1)
+G7Approaches$Improve <- G7Approaches$MathScaleScore_1718 - G7Approaches$MathScaleScore_1617
+mean(G7Approaches$Improve)
+
+G7Meets <- filter(DF_HoustonMath_G7, DF_HoustonMath_G7$OriginLevel == 2)
+G7Meets$Improve <- G7Meets$MathScaleScore_1718 - G7Meets$MathScaleScore_1617
+mean(G7Meets$Improve)
+
+G7Master <- filter(DF_HoustonMath_G7, DF_HoustonMath_G7$OriginLevel == 3)
+G7Master$Improve <- G7Master$MathScaleScore_1718 - G7Master$MathScaleScore_1617
+mean(G7Master$Improve)
+
+mean(G7Approaches$hours_on_program)
+mean(G7Meets$hours_on_program)
+mean(G7Master$hours_on_program)
+
+
+
+
+
+
+DF_HoustonMath_G7$Improve <- DF_HoustonMath_G7$MathPercentileRankings_1718 - DF_HoustonMath_G7$PercentileRankings_1617
+DF_HoustonMath_G7$level.up <- ifelse(DF_HoustonMath_G7$Improve >0, "Yes","No")
+table(DF_HoustonMath_G7$level.up) #894 "Yes" 474 "No"
+
+hist(DF_HoustonMath_G7$benchmark_1_quantile)
+G7B1mean <- mean(DF_HoustonMath_G7$benchmark_1_quantile) #492.1
+G7B1sd <- sd(DF_HoustonMath_G7$benchmark_1_quantile) #204
+
+hist(DF_HoustonMath_G7$benchmark_2_quantile)
+G7B2mean <- mean(DF_HoustonMath_G7$benchmark_2_quantile, na.rm = TRUE) #464.7
+G7B2sd <- sd(DF_HoustonMath_G7$benchmark_2_quantile, na.rm = TRUE) #211.3
+
+hist(DF_HoustonMath_G7$benchmark_3_quantile) #N/A
+G7B3mean <- mean(DF_HoustonMath_G7$benchmark_3_quantile, na.rm = TRUE) #N/A
+G7B3sd <- sd(DF_HoustonMath_G7$benchmark_3_quantile, na.rm = TRUE) #N/A
+
+hist(DF_HoustonMath_G7$Improve)
+G7STAARImproveMean <- mean(DF_HoustonMath_G7$Improve) #5.9
+G7STAARImproveSD <- sd(DF_HoustonMath_G7$Improve) #17.3
+
+```
+
+
+#Grade 8 - 1069 Samples
+```{r}
+DF_HoustonMath_G8 <- filter(DF_MATH, Grade_1718 == "8")
+
+DF_HoustonMath_G8$OriginLevel <- ifelse(DF_HoustonMath_G8$MathScaleScore_1617 >= 1854, 3,
+                                        ifelse(DF_HoustonMath_G8$MathScaleScore_1617 <= 1595, 1 ,2))
+table(DF_HoustonMath_G8$OriginLevel)
+
+G8Approaches <- filter(DF_HoustonMath_G8, DF_HoustonMath_G8$OriginLevel == 1)
+G8Approaches$Improve <- G8Approaches$MathScaleScore_1718 - G8Approaches$MathScaleScore_1617
+mean(G8Approaches$Improve)
+
+
+G8Meets <- filter(DF_HoustonMath_G8, DF_HoustonMath_G8$OriginLevel == 2)
+G8Meets$Improve <- G8Meets$MathScaleScore_1718 - G8Meets$MathScaleScore_1617
+mean(G8Meets$Improve)
+mean(G8Meets$hours_on_program)
+
+G8Master <- filter(DF_HoustonMath_G8, DF_HoustonMath_G8$OriginLevel == 3)
+G8Master$Improve <- G8Master$MathScaleScore_1718 - G8Master$MathScaleScore_1617
+mean(G8Master$Improve)
+
+mean(G8Approaches$hours_on_program)
+mean(G8Meets$hours_on_program)
+mean(G8Master$hours_on_program)
+
+
+
+DF_HoustonMath_G8$Improve <- DF_HoustonMath_G8$MathPercentileRankings_1718 - DF_HoustonMath_G8$PercentileRankings_1617
+DF_HoustonMath_G8$level.up <- ifelse(DF_HoustonMath_G8$Improve >0, "Yes","No")
+table(DF_HoustonMath_G8$level.up) #718 "Yes" 351 "No"
+
+hist(DF_HoustonMath_G8$benchmark_1_quantile)
+G8B1mean <- mean(DF_HoustonMath_G8$benchmark_1_quantile) #602.5
+G8B1sd <- sd(DF_HoustonMath_G8$benchmark_1_quantile) #212.2
+
+hist(DF_HoustonMath_G8$benchmark_2_quantile)
+G8B2mean <- mean(DF_HoustonMath_G8$benchmark_2_quantile, na.rm = TRUE) #521.9
+G8B2sd <- sd(DF_HoustonMath_G8$benchmark_2_quantile, na.rm = TRUE) #216.2
+
+hist(DF_HoustonMath_G8$benchmark_3_quantile) #N/A
+G8B3mean <- mean(DF_HoustonMath_G8$benchmark_3_quantile, na.rm = TRUE) #N/A
+G8B3sd <- sd(DF_HoustonMath_G8$benchmark_3_quantile, na.rm = TRUE) #N/A
+
+hist(DF_HoustonMath_G8$Improve)
+G8STAARImproveMean <- mean(DF_HoustonMath_G8$Improve) #10.1
+G8STAARImproveSD <- sd(DF_HoustonMath_G8$Improve) #20.2
+
+
+
+
+```
+
+```{r}
+##test for positive correlations/ data exploration
+
+#hours_on_program/lesson_completed vs improvement in state exams
+DF_MATH$score_difference <- as.numeric(DF_MATH$MathScaleScore_1718)- as.numeric(DF_MATH$MathScaleScore_1617)
+DF_MATH$percentile_difference <- as.numeric(DF_MATH$MathPercentileRankings_1718)- as.numeric(DF_MATH$PercentileRankings_1617)
+
+plot(DF_MATH$hours_on_program,DF_MATH$score_difference)
+plot(DF_MATH$hours_on_program,DF_MATH$percentile_difference)
+
+plot(DF_MATH$lessons_completed,DF_MATH$score_difference)
+plot(DF_MATH$lessons_passed,DF_MATH$score_difference)
+
+DF_MATH_IML <- filter(DF_MATH, hours_on_program>=50)
+plot(DF_MATH_IML$hours_on_program,DF_MATH_IML$score_difference)
+
+
+#improvement in benchmarks vs improvement in state exams
+DF_MATH_2benchmark <- filter(DF_MATH, !is.na(benchmark_1_percentile) & !is.na(benchmark_2_percentile))
+
+DF_MATH_2benchmark$percentile_difference <- as.numeric(DF_MATH_2benchmark$benchmark_2_percentile)- as.numeric(DF_MATH_2benchmark$benchmark_1_percentile)
+
+plot(DF_MATH_2benchmark$percentile_difference, DF_MATH_2benchmark$score_difference)
+
+
+
+```
+
+
+```{r}
+## prediction - regression
+
+
+
+```
+
+
+```{r}
+## prediction - neural network
+
+
+
+```
+
